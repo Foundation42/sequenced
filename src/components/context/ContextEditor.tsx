@@ -7,8 +7,6 @@ interface ContextEditorProps {
 }
 
 const ContextEditor: React.FC<ContextEditorProps> = ({ onClose }) => {
-  const [activeLevel, setActiveLevel] = useState('project');
-  
   // Mock context data, would come from state
   const contextLevels = [
     { id: 'project', name: 'Project', content: 'This is a music project in the style of funk from the 1970s.' },
@@ -16,6 +14,9 @@ const ContextEditor: React.FC<ContextEditorProps> = ({ onClose }) => {
     { id: 'track1', name: 'Bass Track', content: 'Generate bass lines that are funky and syncopated with emphasis on the one.' },
     { id: 'clip1', name: 'Intro Bass', content: 'Create a simple bass line to introduce the song.' }
   ];
+  
+  // Make sure the active level exists in the contextLevels
+  const [activeLevel, setActiveLevel] = useState(contextLevels[0]?.id || 'project');
   
   const handleSave = () => {
     console.log('Saving context');
@@ -41,7 +42,11 @@ const ContextEditor: React.FC<ContextEditorProps> = ({ onClose }) => {
           </div>
           
           <ContextLevel 
-            level={contextLevels.find(level => level.id === activeLevel) || contextLevels[0]} 
+            level={(contextLevels.find(level => level.id === activeLevel) || contextLevels[0]) as {
+              id: string;
+              name: string;
+              content: string;
+            }} 
           />
         </div>
         

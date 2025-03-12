@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 
+interface ContextLevelType {
+  id: string;
+  name: string;
+  content: string;
+}
+
 interface ContextLevelProps {
-  level: {
-    id: string;
-    name: string;
-    content: string;
-  };
+  level: ContextLevelType;
 }
 
 const ContextLevel: React.FC<ContextLevelProps> = ({ level }) => {

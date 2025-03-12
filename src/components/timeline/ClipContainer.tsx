@@ -57,7 +57,7 @@ const ClipContainer: React.FC<ClipContainerProps> = ({ trackId }) => {
       className="clip-container"
       onClick={handleContainerClick}
     >
-      {clips.map(clip => (
+      {clips.map(clip => clip && (
         <Clip key={clip.id} id={clip.id} />
       ))}
     </div>

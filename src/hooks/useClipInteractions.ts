@@ -99,7 +99,10 @@ const useClipInteractions = (options: ClipInteractionOptions = {}) => {
         const trackIndex = Math.floor(deltaY / trackHeight) + tracksArray.findIndex(t => t.id === initialTrackId);
         
         if (trackIndex >= 0 && trackIndex < tracksArray.length) {
-          newTrackId = tracksArray[trackIndex].id;
+          const track = tracksArray[trackIndex];
+          if (track) {
+            newTrackId = track.id;
+          }
         }
       }
       

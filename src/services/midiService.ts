@@ -144,7 +144,9 @@ class MIDIService {
     
     // If we have outputs and no selected output, select the first one
     if (this.state.outputs.size > 0 && !this.state.selectedOutput) {
-      this.state.selectedOutput = this.state.outputs.values().next().value;
+      const firstOutput = this.state.outputs.values().next().value;
+      // Ensure we don't get undefined - explicitly convert to null if needed
+      this.state.selectedOutput = (firstOutput || null) as MIDIOutput | null;
     }
   };
   
@@ -157,13 +159,16 @@ class MIDIService {
     // If the selected output was disconnected, select a new one if available
     if (
       this.state.selectedOutput && 
+      event.port && 
       event.port.type === 'output' && 
       event.port.id === this.state.selectedOutput.id &&
       event.port.state === 'disconnected'
     ) {
-      this.state.selectedOutput = this.state.outputs.size > 0 
+      // Ensure we don't get undefined - explicitly convert to null if needed
+      const nextValue = this.state.outputs.size > 0 
         ? this.state.outputs.values().next().value 
         : null;
+      this.state.selectedOutput = nextValue as MIDIOutput | null;
     }
   };
   
