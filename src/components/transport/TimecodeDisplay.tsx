@@ -1,21 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import usePlayback from '../../hooks/usePlayback';
 
 const TimecodeDisplay: React.FC = () => {
-  const [currentTime, setCurrentTime] = useState({
-    bars: 1,
-    beats: 1,
-    ticks: 0
-  });
-
-  // This would be connected to the actual playback state
-  // For now, we'll just use a dummy value
+  const { playheadPosition, formatPlayheadPosition } = usePlayback();
   
   return (
     <div className="timecode-display">
       <div className="timecode-value">
-        <span className="bars">{currentTime.bars.toString().padStart(2, '0')}</span>:
-        <span className="beats">{currentTime.beats.toString().padStart(2, '0')}</span>:
-        <span className="ticks">{currentTime.ticks.toString().padStart(3, '0')}</span>
+        {formatPlayheadPosition()}
       </div>
       <div className="timecode-label">BAR:BEAT:TICK</div>
     </div>

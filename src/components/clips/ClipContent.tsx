@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import useTimelineStore from '../../store/timelineStore';
 
 interface ClipContentProps {
   id: string;
@@ -6,19 +7,50 @@ interface ClipContentProps {
   onClose: () => void;
 }
 
-const ClipContent: React.FC<ClipContentProps> = ({ id, content, onClose }) => {
-  const [promptText, setPromptText] = useState(content);
+const ClipContent: React.FC<ClipContentProps> = ({ id, content: initialContent, onClose }) => {
+  const [promptText, setPromptText] = useState(initialContent);
+  const updateClip = useTimelineStore(state => state.updateClip);
+  const updateClipStatus = useTimelineStore(state => state.updateClipStatus);
+  const clip = useTimelineStore(state => state.clips[id]);
+  
+  useEffect(() => {
+    // Update local state if clip content changes externally
+    if (clip?.content !== promptText) {
+      setPromptText(clip?.content || '');
+    }
+  }, [clip?.content]);
   
   const handleSave = () => {
-    // Here we would update the clip content in state
-    console.log('Saving clip', id, 'with content:', promptText);
+    updateClip(id, { content: promptText });
     onClose();
   };
   
   const handleProcess = () => {
-    // Here we would trigger AI processing of the clip
-    console.log('Processing clip', id);
+    // Set status to processing
+    updateClipStatus(id, 'processing');
+    
+    // Simulate processing with a timer
+    setTimeout(() => {
+      // Set status to complete and add some mock output
+      updateClipStatus(id, 'complete', { 
+        result: 'Processed content: ' + promptText,
+        processingTime: 2.5
+      });
+      
+      // Close the editor
+      onClose();
+    }, 2000);
   };
+  
+  const handleCancel = () => {
+    onClose();
+  };
+  
+  // If the clip no longer exists, close the editor
+  if (!clip) {
+    onClose();
+    return null;
+  }
 
   return (
     <div className="clip-editor-modal">
@@ -32,6 +64,8 @@ const ClipContent: React.FC<ClipContentProps> = ({ id, content, onClose }) => {
             value={promptText}
             onChange={(e) => setPromptText(e.target.value)}
             rows={6}
+            placeholder="Enter your prompt here..."
+            autoFocus
           />
         </div>
         
@@ -45,9 +79,9 @@ const ClipContent: React.FC<ClipContentProps> = ({ id, content, onClose }) => {
         </div>
         
         <div className="editor-actions">
-          <button onClick={handleProcess}>Process</button>
+          <button onClick={handleProcess} disabled={!promptText.trim()}>Process</button>
           <button onClick={handleSave}>Save</button>
-          <button onClick={onClose}>Cancel</button>
+          <button onClick={handleCancel}>Cancel</button>
         </div>
       </div>
     </div>

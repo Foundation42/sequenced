@@ -1,48 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import ClipContent from './ClipContent';
 import ClipStatusIndicator from './ClipStatusIndicator';
+import useTimelineStore from '../../store/timelineStore';
+import useClipInteractions from '../../hooks/useClipInteractions';
+import { TimelineContext } from '../timeline/Timeline';
 
 interface ClipProps {
   id: string;
-  content: string;
-  style?: React.CSSProperties;
-  status?: 'idle' | 'processing' | 'complete' | 'error';
 }
 
-const Clip: React.FC<ClipProps> = ({ 
-  id, 
-  content, 
-  style = {}, 
-  status = 'idle' 
-}) => {
-  const [isEditing, setIsEditing] = useState(false);
+const Clip: React.FC<ClipProps> = ({ id }) => {
+  const clip = useTimelineStore(state => state.clips[id]);
+  const selectedClipIds = useTimelineStore(state => state.selectedClipIds);
+  const isSelected = selectedClipIds.includes(id);
   
-  const handleDoubleClick = () => {
+  const [isEditing, setIsEditing] = useState(false);
+  const clipRef = useRef<HTMLDivElement>(null);
+  
+  const { beatToPixel } = useContext(TimelineContext);
+  
+  const { 
+    handleClipSelect,
+    handleClipDrag,
+    handleClipResize
+  } = useClipInteractions({ snapToGrid: true, gridSize: 0.25 });
+  
+  if (!clip) return null;
+  
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsEditing(true);
   };
   
   const handleCloseEditor = () => {
     setIsEditing(false);
   };
-
+  
+  // Calculate position and width based on start time and duration
+  const left = beatToPixel(clip.startTime);
+  const width = beatToPixel(clip.duration);
+  
   return (
     <>
       <div 
-        className={`clip clip-status-${status}`}
-        style={style}
+        ref={clipRef}
+        className={`clip clip-status-${clip.status} ${isSelected ? 'selected' : ''}`}
+        style={{
+          left: `${left}px`,
+          width: `${width}px`
+        }}
+        onClick={(e) => handleClipSelect(id, e)}
         onDoubleClick={handleDoubleClick}
+        onMouseDown={(e) => handleClipDrag(id, e, clipRef)}
         data-clip-id={id}
       >
         <div className="clip-preview">
-          {content.substring(0, 50)}{content.length > 50 ? '...' : ''}
+          {clip.content.substring(0, 50)}{clip.content.length > 50 ? '...' : ''}
         </div>
-        <ClipStatusIndicator status={status} />
+        <ClipStatusIndicator status={clip.status} />
+        
+        {/* Resize handles */}
+        <div 
+          className="clip-resize-handle clip-resize-handle-left"
+          onMouseDown={(e) => handleClipResize(id, e, 'left')}
+        />
+        <div 
+          className="clip-resize-handle clip-resize-handle-right"
+          onMouseDown={(e) => handleClipResize(id, e, 'right')}
+        />
       </div>
       
       {isEditing && (
         <ClipContent 
           id={id}
-          content={content} 
+          content={clip.content} 
           onClose={handleCloseEditor}
         />
       )}

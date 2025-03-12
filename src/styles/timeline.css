@@ -21,16 +21,26 @@
 .ruler-markings {
   display: flex;
   height: 100%;
+  position: relative;
 }
 
 .ruler-mark {
-  width: 100px;
-  border-right: 1px solid var(--border-color);
+  position: absolute;
+  height: 100%;
+  border-left: 1px solid var(--border-color);
   display: flex;
-  align-items: center;
-  padding-left: var(--spacing-sm);
-  color: var(--text-light-color);
-  font-size: 0.8rem;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.ruler-mark.major-tick {
+  border-left-color: var(--text-color);
+}
+
+.ruler-mark.minor-tick {
+  border-left-color: var(--border-color);
+  height: 50% !important;
+  bottom: 0;
 }
 
 .timeline-content {
@@ -38,6 +48,11 @@
   position: relative;
   display: flex;
   overflow: auto;
+}
+
+.timeline-content-inner {
+  position: relative;
+  min-height: 100%;
 }
 
 .playhead {
@@ -50,14 +65,28 @@
   pointer-events: none;
 }
 
+.playhead-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--primary-color);
+}
+
 .playhead-handle {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background-color: var(--primary-color);
   border-radius: 50%;
   position: absolute;
-  top: -5px;
-  left: -4.5px;
+  top: -6px;
+  left: -5.5px;
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.playhead-handle:active {
+  cursor: grabbing;
 }
 
 .track-list {
@@ -65,23 +94,37 @@
   display: flex;
   flex-direction: column;
   min-height: 100%;
+  position: relative;
 }
 
 .track {
   height: var(--track-height);
   display: flex;
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.track.selected {
+  background-color: rgba(74, 107, 252, 0.1);
 }
 
 .track-group {
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid var(--border-color);
+  position: relative;
 }
 
-.track-group > .track-header {
+.track-group.selected {
+  background-color: rgba(74, 107, 252, 0.1);
+}
+
+.track-group-header {
+  display: flex;
+  align-items: center;
   height: var(--track-height);
   background-color: rgba(0, 0, 0, 0.2);
+  position: relative;
 }
 
 .group-tracks {
@@ -145,6 +188,11 @@
   padding: 0;
 }
 
+.track-mute-button.active, .track-solo-button.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
 .collapse-button {
   background: none;
   border: none;
@@ -162,13 +210,18 @@
   overflow: visible;
 }
 
-.add-track-button {
-  padding: var(--spacing-sm);
-  margin: var(--spacing-sm);
-  align-self: flex-start;
+.track-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-sm);
 }
 
-/* Clip styles in the timeline.css file */
+.add-track-button, .add-group-button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+/* Clip styles */
 .clip {
   position: absolute;
   height: calc(var(--track-height) - 20px);
@@ -184,6 +237,11 @@
 .clip:hover {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.clip.selected {
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 5px rgba(74, 107, 252, 0.5);
 }
 
 .clip-preview {
@@ -249,6 +307,24 @@
 
 .clip-status-error {
   border-color: var(--status-error-color);
+}
+
+/* Clip resize handles */
+.clip-resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 100%;
+  top: 0;
+  cursor: ew-resize;
+  z-index: 5;
+}
+
+.clip-resize-handle-left {
+  left: 0;
+}
+
+.clip-resize-handle-right {
+  right: 0;
 }
 
 /* Transport controls */

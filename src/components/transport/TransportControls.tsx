@@ -1,25 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import TimecodeDisplay from './TimecodeDisplay';
+import usePlayback from '../../hooks/usePlayback';
+import useTimelineStore from '../../store/timelineStore';
 
 const TransportControls: React.FC = () => {
+  const { isPlaying, toggle, stop, jumpToPosition } = usePlayback();
+  const { tempo, setTempo } = useTimelineStore();
+  const [tempoValue, setTempoValue] = useState(tempo);
+  
   const handlePlayPause = () => {
-    console.log('Play/Pause');
+    toggle();
   };
   
   const handleStop = () => {
-    console.log('Stop');
+    stop();
+    jumpToPosition(0);
   };
   
   const handleRecord = () => {
-    console.log('Record');
+    // Record functionality would be implemented later
+    console.log('Record not implemented yet');
   };
   
   const handleRewind = () => {
-    console.log('Rewind');
+    jumpToPosition(0);
   };
   
   const handleForward = () => {
-    console.log('Forward');
+    // Skip ahead by 4 beats
+    const { playheadPosition } = useTimelineStore.getState();
+    jumpToPosition(Math.max(0, playheadPosition + 4));
+  };
+  
+  const handleTempoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTempo = parseInt(e.target.value, 10);
+    setTempoValue(newTempo);
+  };
+  
+  const handleTempoBlur = () => {
+    if (tempoValue !== tempo) {
+      setTempo(tempoValue);
+    }
   };
 
   return (
@@ -44,7 +65,7 @@ const TransportControls: React.FC = () => {
           onClick={handlePlayPause}
           aria-label="Play/Pause"
         >
-          ⏯️
+          {isPlaying ? '⏸️' : '▶️'}
         </button>
         <button 
           className="transport-button record-button" 
@@ -71,7 +92,9 @@ const TransportControls: React.FC = () => {
           type="number" 
           min="20" 
           max="300" 
-          defaultValue="120" 
+          value={tempoValue}
+          onChange={handleTempoChange}
+          onBlur={handleTempoBlur}
         />
         <span>BPM</span>
       </div>

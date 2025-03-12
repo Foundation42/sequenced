@@ -1,40 +1,45 @@
 import React from 'react';
+import useTimelineStore from '../../store/timelineStore';
 
 interface TrackHeaderProps {
   id: string;
-  name: string;
-  type: string;
-  isGroup?: boolean;
-  isCollapsed?: boolean;
-  onToggleCollapse?: () => void;
 }
 
-const TrackHeader: React.FC<TrackHeaderProps> = ({ 
-  id, 
-  name, 
-  type, 
-  isGroup = false,
-  isCollapsed = false,
-  onToggleCollapse
-}) => {
+const TrackHeader: React.FC<TrackHeaderProps> = ({ id }) => {
+  const track = useTimelineStore(state => state.tracks[id]);
+  
+  if (!track) return null;
+  
+  const handleMuteToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    useTimelineStore.getState().updateTrack(id, { muted: !track.muted });
+  };
+  
+  const handleSoloToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    useTimelineStore.getState().updateTrack(id, { solo: !track.solo });
+  };
+
   return (
-    <div className="track-header">
-      {isGroup && (
-        <button 
-          className="collapse-button"
-          onClick={onToggleCollapse}
-          aria-label={isCollapsed ? 'Expand track group' : 'Collapse track group'}
-        >
-          {isCollapsed ? '►' : '▼'}
-        </button>
-      )}
-      
-      <div className="track-color-indicator" data-track-type={type}></div>
-      <div className="track-name">{name}</div>
+    <div className="track-header" onClick={(e) => e.stopPropagation()}>
+      <div className="track-color-indicator" data-track-type={track.type}></div>
+      <div className="track-name">{track.name}</div>
       
       <div className="track-controls">
-        <button className="track-mute-button" aria-label="Mute track">M</button>
-        <button className="track-solo-button" aria-label="Solo track">S</button>
+        <button 
+          className={`track-mute-button ${track.muted ? 'active' : ''}`} 
+          aria-label={`${track.muted ? 'Unmute' : 'Mute'} track`}
+          onClick={handleMuteToggle}
+        >
+          M
+        </button>
+        <button 
+          className={`track-solo-button ${track.solo ? 'active' : ''}`} 
+          aria-label={`${track.solo ? 'Unsolo' : 'Solo'} track`}
+          onClick={handleSoloToggle}
+        >
+          S
+        </button>
       </div>
     </div>
   );

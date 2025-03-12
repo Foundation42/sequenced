@@ -1,33 +1,62 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import Track from './Track';
 import TrackGroup from './TrackGroup';
+import useTimelineStore from '../../store/timelineStore';
 
 const TrackList: React.FC = () => {
-  // This would come from application state
-  const mockTracks = [
-    { id: '1', name: 'Track 1', type: 'midi' },
-    { id: '2', name: 'Track 2', type: 'midi' },
-    { 
-      id: '3', 
-      name: 'Group 1', 
+  const tracks = useTimelineStore(state => {
+    const allTracks = Object.values(state.tracks);
+    // Sort tracks by position
+    return [...allTracks].sort((a, b) => a.position - b.position);
+  });
+  
+  const addTrack = useTimelineStore(state => state.addTrack);
+  
+  const handleAddTrack = useCallback(() => {
+    const trackType = 'midi'; // Default track type
+    addTrack({
+      name: `Track ${tracks.length + 1}`,
+      type: trackType
+    });
+  }, [tracks.length, addTrack]);
+  
+  const handleAddGroup = useCallback(() => {
+    addTrack({
+      name: `Group ${tracks.filter(track => track.isGroup).length + 1}`,
       type: 'group',
-      children: [
-        { id: '4', name: 'Track 3', type: 'midi' },
-        { id: '5', name: 'Track 4', type: 'visualization' }
-      ]
-    }
-  ];
+      isGroup: true
+    });
+  }, [tracks, addTrack]);
+  
+  // Separate tracks and groups, filtering out tracks that belong to groups
+  // (they will be rendered by their parent group component)
+  const topLevelTracks = tracks.filter(track => !track.groupId);
   
   return (
     <div className="track-list">
-      {mockTracks.map(track => (
-        track.type === 'group' ? (
-          <TrackGroup key={track.id} id={track.id} name={track.name} tracks={track.children} />
+      {topLevelTracks.map(track => (
+        track.isGroup ? (
+          <TrackGroup key={track.id} id={track.id} />
         ) : (
-          <Track key={track.id} id={track.id} name={track.name} type={track.type} />
+          <Track key={track.id} id={track.id} />
         )
       ))}
-      <button className="add-track-button">Add Track</button>
+      
+      <div className="track-actions">
+        <button 
+          className="add-track-button"
+          onClick={handleAddTrack}
+        >
+          Add Track
+        </button>
+        
+        <button 
+          className="add-group-button"
+          onClick={handleAddGroup}
+        >
+          Add Group
+        </button>
+      </div>
     </div>
   );
 };
