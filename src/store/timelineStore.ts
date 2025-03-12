@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
-import { Clip, Track, Device, ClipProcessingStatus } from '../types';
+import type { Clip, Track, Device, ClipProcessingStatus } from '../types';
 
 interface TimelineState {
   tracks: Record<string, Track>;
@@ -237,6 +237,8 @@ const useTimelineStore = create<TimelineState>((set, get) => ({
     
     set((state) => {
       const track = state.tracks[trackId];
+      
+      if (!track) return state;
       
       return {
         clips: {
